@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# Copyright (c) 2024.
+# Created by Andy Pangaribuan. All Rights Reserved.
+#
+# This product is protected by copyright and distributed under
+# licenses restricting copying, distribution and decompilation.
+
+# make executable: $ chmod +x .taskfile
+# make alias:
+# - $ subl ~/.zshrc
+# - add line: alias task="./.taskfile"
+# run with $ task
+
+function help {
+  cat .taskfile | \
+  sed 's/#: space/&\nfunction space {/g' | \
+  grep -B1 -E '^[[:space:]]*([[:alnum:]_]+[[:space:]]*\(\)|function[[:space:]]+[[:alnum:]_]+)' | \
+  sed '/function help {/d' | \
+  sed -r 's/function //' | \
+  sed -r 's/ \{/:/' | \
+  grep -v -- -- | \
+  sed '/^\s*$/d' | \
+  sed 'N;s/\n/###/' | \
+  sed -n 's/^#: \(.*\)###\(.*\):.*/\2###→ \1/p' | \
+  column -t -s '###' | \
+  sed 's/.*→ space.*//g'
+}
+
+
+
+#: update + check
+function run {
+  go mod tidy
+  go vet
+  gofmt -l .
+  golangci-lint run
+  staticcheck ./...
+}
+
+#: generate proto
+function generate {
+  rm -rf $(pwd)/res/proto/generated
+  protoc --go_out=. --go-grpc_out=. ./res/proto/*.proto
+}
+
+#: build clog image
+function build-image {
+  version=2.0.3
+  image=ghcr.io/andypangaribuan/clog
+
+  docker build --no-cache \
+    -t $image:$version \
+    -f ./res/Dockerfile .
+}
+
+#: space
+
+#: turn on the docker database
+function docker-up {
+  cd res
+  docker-compose up -d
+}
+
+#: turn off the docker database
+function docker-down {
+  cd res
+  docker-compose down
+}
+
+#: clean the docker database
+function docker-reset {
+  cd res
+  docker-compose down
+  rm -rf postgres/data
+  docker-compose up -d
+  sleep 5
+  docker-compose ps -a
+
+  sleep 10
+  PGPASSWORD=clogpassword \
+  PGOPTIONS="-c search_path=public" \
+  psql -h 127.0.0.1 -p 6677 \
+  -U cloguser -d clogdb \
+  <<-EOSQL
+  BEGIN;
+
+  \i sql/table.sql
+
+  CREATE EXTENSION IF NOT EXISTS columnar;
+  ALTER EXTENSION columnar UPDATE;
+  ALTER DATABASE clogdb SET default_table_access_method = 'columnar';
+
+  COMMIT;
+EOSQL
+}
+
+
+#: force prune docker container, image and builder
+function docker-clean {
+  docker container prune -f
+  docker image prune -f
+  docker builder prune -f
+}
+
+#: space
+
+# ___ do not change ___
+case $1 in
+"") help ;;
+*) "$@" ;;
+esac
