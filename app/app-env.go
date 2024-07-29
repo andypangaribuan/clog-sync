@@ -17,12 +17,21 @@ func initEnv() {
 		AppEnv:         gm.Util.Env.GetAppEnv("APP_ENV"),
 		AppTimezone:    gm.Util.Env.GetString("APP_TIMEZONE"),
 		AppAutoRecover: gm.Util.Env.GetBool("APP_AUTO_RECOVER"),
-		GrpcPort:       gm.Util.Env.GetInt("GRPC_PORT"),
+		RestPort:       gm.Util.Env.GetInt("REST_PORT"),
 
-		DbHost: gm.Util.Env.GetString("DB_HOST"),
-		DbPort: gm.Util.Env.GetInt("DB_PORT"),
-		DbName: gm.Util.Env.GetString("DB_NAME"),
-		DbUser: gm.Util.Env.GetString("DB_USER"),
-		DbPass: gm.Util.Env.GetString("DB_PASS"),
+		DbSource: &stuDb{
+			Host: gm.Util.Env.GetString("SOURCE_DB_HOST"),
+			Port: gm.Util.Env.GetInt("SOURCE_DB_PORT"),
+			Name: gm.Util.Env.GetString("SOURCE_DB_NAME"),
+			User: gm.Util.Env.GetString("SOURCE_DB_USER"),
+			Pass: gm.Util.Env.GetString("SOURCE_DB_PASS"),
+		},
+		DbDestination: &stuDb{
+			Host: gm.Util.Env.GetString("DESTINATION_DB_HOST"),
+			Port: gm.Util.Env.GetInt("DESTINATION_DB_PORT"),
+			Name: gm.Util.Env.GetString("DESTINATION_DB_NAME"),
+			User: gm.Util.Env.GetString("DESTINATION_DB_USER"),
+			Pass: gm.Util.Env.GetString("DESTINATION_DB_PASS"),
+		},
 	}
 }

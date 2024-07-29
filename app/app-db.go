@@ -15,14 +15,24 @@ import (
 )
 
 func initDb() {
-	conn := mol.DbConnection{
+	source := mol.DbConnection{
 		AppName:  Env.AppName,
-		Host:     Env.DbHost,
-		Port:     Env.DbPort,
-		Name:     Env.DbName,
-		Username: Env.DbUser,
-		Password: Env.DbPass,
+		Host:     Env.DbSource.Host,
+		Port:     Env.DbSource.Port,
+		Name:     Env.DbSource.Name,
+		Username: Env.DbSource.User,
+		Password: Env.DbSource.Pass,
 	}
 
-	Db = gm.Db.Postgres(conn)
+	destination := mol.DbConnection{
+		AppName:  Env.AppName,
+		Host:     Env.DbDestination.Host,
+		Port:     Env.DbDestination.Port,
+		Name:     Env.DbDestination.Name,
+		Username: Env.DbDestination.User,
+		Password: Env.DbDestination.Pass,
+	}
+
+	DbSource = gm.Db.Postgres(source)
+	DbDestination = gm.Db.Postgres(destination)
 }

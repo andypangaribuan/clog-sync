@@ -18,7 +18,7 @@ import (
 
 func main() {
 	fm.CallOrderedInit()
-	server.FuseR(app.Env.GrpcPort, rest)
+	server.FuseR(app.Env.RestPort, rest)
 }
 
 func rest(router server.RouterR) {

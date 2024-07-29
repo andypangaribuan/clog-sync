@@ -12,6 +12,7 @@ package app
 import "github.com/andypangaribuan/gmod/ice"
 
 var (
-	Db  ice.DbInstance
-	Env *stuEnv
+	DbSource      ice.DbInstance
+	DbDestination ice.DbInstance
+	Env           *stuEnv
 )

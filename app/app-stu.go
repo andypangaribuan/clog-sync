@@ -16,11 +16,16 @@ type stuEnv struct {
 	AppEnv         ice.AppEnv
 	AppTimezone    string
 	AppAutoRecover bool
-	GrpcPort       int
+	RestPort       int
 
-	DbHost string
-	DbPort int
-	DbName string
-	DbUser string
-	DbPass string
+	DbSource      *stuDb
+	DbDestination *stuDb
+}
+
+type stuDb struct {
+	Host string
+	Port int
+	Name string
+	User string
+	Pass string
 }
