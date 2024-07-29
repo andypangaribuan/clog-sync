@@ -11,6 +11,7 @@ package main
 
 import (
 	"clog-sync/app"
+	"clog-sync/handler"
 
 	"github.com/andypangaribuan/gmod/fm"
 	"github.com/andypangaribuan/gmod/server"
@@ -22,4 +23,10 @@ func main() {
 }
 
 func rest(router server.RouterR) {
+	router.AutoRecover(app.Env.AppAutoRecover)
+	router.PrintOnError(app.Env.AppServerPrintOnError)
+
+	router.Endpoints(nil, nil, map[string][]func(server.FuseRContext) any{
+		"GET: /private/status": {handler.Private.Status},
+	})
 }

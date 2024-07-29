@@ -12,11 +12,12 @@ package app
 import "github.com/andypangaribuan/gmod/ice"
 
 type stuEnv struct {
-	AppName        string
-	AppEnv         ice.AppEnv
-	AppTimezone    string
-	AppAutoRecover bool
-	RestPort       int
+	AppName               string
+	AppEnv                ice.AppEnv
+	AppTimezone           string
+	AppAutoRecover        bool
+	AppServerPrintOnError bool
+	RestPort              int
 
 	DbSource      *stuDb
 	DbDestination *stuDb
