@@ -38,70 +38,17 @@ function run {
   staticcheck ./...
 }
 
-#: generate proto
-function generate {
-  rm -rf $(pwd)/res/proto/generated
-  protoc --go_out=. --go-grpc_out=. ./res/proto/*.proto
-}
 
 #: build clog image
 function build-image {
-  version=2.0.3
-  image=ghcr.io/andypangaribuan/clog
+  version=1.0.0
+  image=ghcr.io/andypangaribuan/clog-sync
 
   docker build --no-cache \
     -t $image:$version \
     -f ./res/Dockerfile .
 }
 
-#: space
-
-#: turn on the docker database
-function docker-up {
-  cd res
-  docker-compose up -d
-}
-
-#: turn off the docker database
-function docker-down {
-  cd res
-  docker-compose down
-}
-
-#: clean the docker database
-function docker-reset {
-  cd res
-  docker-compose down
-  rm -rf postgres/data
-  docker-compose up -d
-  sleep 5
-  docker-compose ps -a
-
-  sleep 10
-  PGPASSWORD=clogpassword \
-  PGOPTIONS="-c search_path=public" \
-  psql -h 127.0.0.1 -p 6677 \
-  -U cloguser -d clogdb \
-  <<-EOSQL
-  BEGIN;
-
-  \i sql/table.sql
-
-  CREATE EXTENSION IF NOT EXISTS columnar;
-  ALTER EXTENSION columnar UPDATE;
-  ALTER DATABASE clogdb SET default_table_access_method = 'columnar';
-
-  COMMIT;
-EOSQL
-}
-
-
-#: force prune docker container, image and builder
-function docker-clean {
-  docker container prune -f
-  docker image prune -f
-  docker builder prune -f
-}
 
 #: space
 

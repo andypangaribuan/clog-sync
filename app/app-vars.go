@@ -7,19 +7,11 @@
  * All Rights Reserved.
  */
 
-package main
+package app
 
-import (
-	"clog-sync/app"
+import "github.com/andypangaribuan/gmod/ice"
 
-	"github.com/andypangaribuan/gmod/fm"
-	"github.com/andypangaribuan/gmod/server"
+var (
+	Db  ice.DbInstance
+	Env *stuEnv
 )
-
-func main() {
-	fm.CallOrderedInit()
-	server.FuseR(app.Env.GrpcPort, rest)
-}
-
-func rest(router server.RouterR) {
-}

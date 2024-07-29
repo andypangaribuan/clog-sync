@@ -7,19 +7,18 @@
  * All Rights Reserved.
  */
 
-package main
+package app
 
 import (
-	"clog-sync/app"
-
-	"github.com/andypangaribuan/gmod/fm"
-	"github.com/andypangaribuan/gmod/server"
+	_ "github.com/andypangaribuan/gmod"
+	"github.com/andypangaribuan/gmod/gm"
 )
 
-func main() {
-	fm.CallOrderedInit()
-	server.FuseR(app.Env.GrpcPort, rest)
-}
+func init() {
+	initEnv()
+	initDb()
 
-func rest(router server.RouterR) {
+	gm.Conf.
+		SetTimezone(Env.AppTimezone).
+		Commit()
 }
