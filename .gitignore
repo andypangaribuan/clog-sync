@@ -25,3 +25,4 @@ go.work
 __debug_*
 
 res/postgres/data
+res/envs
