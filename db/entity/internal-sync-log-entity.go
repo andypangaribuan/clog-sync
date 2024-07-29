@@ -7,17 +7,11 @@
  * All Rights Reserved.
  */
 
-package app
+package entity
 
-import (
-	"github.com/andypangaribuan/gmod/ice"
-	"github.com/jackc/pgx/v5"
-)
+import "time"
 
-var (
-	DbSource      ice.DbInstance
-	DbDestDbq     *pgx.Conn
-	DbDestInfo    *pgx.Conn
-	DbDestService *pgx.Conn
-	Env           *stuEnv
-)
+type InternalSyncLog struct {
+	TableName string    `db:"table_name"`
+	LastSync  time.Time `db:"last_sync"`
+}

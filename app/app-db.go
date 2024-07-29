@@ -10,8 +10,13 @@
 package app
 
 import (
+	"context"
+	"fmt"
+	"log"
+
 	"github.com/andypangaribuan/gmod/gm"
 	"github.com/andypangaribuan/gmod/mol"
+	"github.com/jackc/pgx/v5"
 )
 
 func initDb() {
@@ -34,5 +39,26 @@ func initDb() {
 	}
 
 	DbSource = gm.Db.Postgres(source)
-	DbDestination = gm.Db.Postgres(destination)
+	// DbDestination = gm.Db.Postgres(destination)
+
+	connStr := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v", destination.Username, destination.Password, destination.Host, destination.Port, destination.Name)
+
+	conn1, err := pgx.Connect(context.Background(), connStr)
+	if err != nil {
+		log.Fatalf("destination connection error\n%v\n", err)
+	}
+
+	conn2, err := pgx.Connect(context.Background(), connStr)
+	if err != nil {
+		log.Fatalf("destination connection error\n%v\n", err)
+	}
+
+	conn3, err := pgx.Connect(context.Background(), connStr)
+	if err != nil {
+		log.Fatalf("destination connection error\n%v\n", err)
+	}
+
+	DbDestDbq = conn1
+	DbDestInfo = conn2
+	DbDestService = conn3
 }

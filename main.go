@@ -11,15 +11,40 @@ package main
 
 import (
 	"clog-sync/app"
+	"clog-sync/cron"
 	"clog-sync/handler"
+	"time"
 
 	"github.com/andypangaribuan/gmod/fm"
 	"github.com/andypangaribuan/gmod/server"
+	"github.com/go-co-op/gocron"
 )
 
 func main() {
 	fm.CallOrderedInit()
+	runCron()
 	server.FuseR(app.Env.RestPort, rest)
+}
+
+func runCron() {
+	var (
+		isStartUp = true
+		loc, _    = time.LoadLocation(app.Env.AppTimezone)
+		scheduler = gocron.NewScheduler(loc)
+	)
+
+	_, _ = scheduler.Every(app.Env.FetchInterval).Do(func() {
+		if isStartUp {
+			isStartUp = false
+			time.Sleep(app.Env.FetchDelayStartUp)
+		}
+
+		go cron.SyncDbqLog()
+		go cron.SyncInfoLog()
+		go cron.SyncServiceLog()
+	})
+
+	scheduler.StartAsync()
 }
 
 func rest(router server.RouterR) {

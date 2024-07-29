@@ -7,17 +7,16 @@
  * All Rights Reserved.
  */
 
-package app
+package cron
 
-import (
-	"github.com/andypangaribuan/gmod/ice"
-	"github.com/jackc/pgx/v5"
-)
+import "sync"
 
 var (
-	DbSource      ice.DbInstance
-	DbDestDbq     *pgx.Conn
-	DbDestInfo    *pgx.Conn
-	DbDestService *pgx.Conn
-	Env           *stuEnv
+	mxSyncDbqLog     sync.Mutex
+	mxSyncInfoLog    sync.Mutex
+	mxSyncServiceLog sync.Mutex
+
+	isSyncDbqLogRunning     bool
+	isSyncInfoLogRunning    bool
+	isSyncServiceLogRunning bool
 )

@@ -9,7 +9,11 @@
 
 package app
 
-import "github.com/andypangaribuan/gmod/ice"
+import (
+	"time"
+
+	"github.com/andypangaribuan/gmod/ice"
+)
 
 type stuEnv struct {
 	AppName               string
@@ -18,6 +22,10 @@ type stuEnv struct {
 	AppAutoRecover        bool
 	AppServerPrintOnError bool
 	RestPort              int
+
+	FetchInterval     string
+	FetchDelayStartUp time.Duration
+	FetchLimit        int
 
 	DbSource      *stuDb
 	DbDestination *stuDb

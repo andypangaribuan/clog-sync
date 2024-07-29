@@ -23,9 +23,9 @@ func init() {
 			fn(app.DbSource)
 		}
 
-		for _, fn := range callbacksDestination {
-			fn(app.DbDestination)
-		}
+		// for _, fn := range callbacksDestination {
+		// 	fn(app.DbDestination)
+		// }
 	})
 }
 

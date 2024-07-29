@@ -12,6 +12,7 @@ package repo
 import (
 	"clog-sync/db/entity"
 
+	"github.com/andypangaribuan/gmod/core/db"
 	"github.com/andypangaribuan/gmod/ice"
 )
 
@@ -35,10 +36,10 @@ func init() {
 	}
 
 	addSource(func(dbi ice.DbInstance) {
-		SourceInfoLog = new(dbi, tableName, columns, fn)
+		SourceInfoLog = new(dbi, tableName, columns, fn, db.RepoOpt().WithDeletedAtIsNull(false))
 	})
 
 	addDestination(func(dbi ice.DbInstance) {
-		DestinationInfoLog = new(dbi, tableName, columns, fn)
+		DestinationInfoLog = new(dbi, tableName, columns, fn, db.RepoOpt().WithDeletedAtIsNull(false))
 	})
 }
