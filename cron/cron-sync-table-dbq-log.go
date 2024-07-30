@@ -9,7 +9,7 @@
 
 package cron
 
-func SyncTableDbqLog() {
+func SyncTableDbqLog(optAction string) {
 	mxSyncDbqLog.Lock()
 	defer mxSyncDbqLog.Unlock()
 
@@ -18,7 +18,7 @@ func SyncTableDbqLog() {
 	}
 
 	isSyncDbqLogRunning = true
-	go doSync("dbq_log", "", func() {
+	go doSync("dbq_log", optAction, func() {
 		mxSyncDbqLog.Lock()
 		defer mxSyncDbqLog.Unlock()
 		isSyncDbqLogRunning = false

@@ -16,6 +16,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/andypangaribuan/gmod/core/db"
@@ -69,6 +70,24 @@ func doSync(tableName string, optAction string, callback func()) {
 			})
 
 	case tableName == "dbq_log" && optAction == "":
+		exec(app.DbDestDbq, ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
+			func(lastSync *time.Time) ([]*entity.DbqLog, error) {
+				return repo.SourceDbqLog.Fetches("created_at>?", lastSync, endQuery)
+			})
+
+	case tableName == "dbq_log":
+		var (
+			opt, _      = strconv.Atoi(optAction)
+			secondRange = 10
+			start       = opt * secondRange
+			seconds     = make([]int, 0)
+		)
+
+		for i := 0; i < secondRange; i++ {
+			seconds = append(seconds, start+i)
+		}
+
+		stm = fmt.Sprintf("%v-%v", stm, opt)
 		exec(app.DbDestDbq, ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
 			func(lastSync *time.Time) ([]*entity.DbqLog, error) {
 				return repo.SourceDbqLog.Fetches("created_at>?", lastSync, endQuery)

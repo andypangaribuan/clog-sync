@@ -16,8 +16,9 @@ import (
 
 var (
 	DbSource      ice.DbInstance
-	DbDestDbq     *pgx.Conn
+	Env           *stuEnv
 	DbDestInfo    *pgx.Conn
 	DbDestService *pgx.Conn
-	Env           *stuEnv
+	DbDestDbq     *pgx.Conn
+	LsDbDestDbq   []*pgx.Conn
 )

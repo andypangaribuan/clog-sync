@@ -42,23 +42,25 @@ func initDb() {
 	// DbDestination = gm.Db.Postgres(destination)
 
 	connStr := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v", destination.Username, destination.Password, destination.Host, destination.Port, destination.Name)
+	ls := createMultiConnection(3, connStr)
 
-	conn1, err := pgx.Connect(context.Background(), connStr)
-	if err != nil {
-		log.Fatalf("destination connection error\n%v\n", err)
+	DbDestDbq = ls[0]
+	DbDestInfo = ls[1]
+	DbDestService = ls[2]
+	LsDbDestDbq = createMultiConnection(10, connStr)
+}
+
+func createMultiConnection(total int, connStr string) []*pgx.Conn {
+	ls := make([]*pgx.Conn, 0)
+
+	for i := 0; i < total; i++ {
+		conn, err := pgx.Connect(context.Background(), connStr)
+		if err != nil {
+			log.Fatalf("destination connection error\n%v\n", err)
+		}
+
+		ls = append(ls, conn)
 	}
 
-	conn2, err := pgx.Connect(context.Background(), connStr)
-	if err != nil {
-		log.Fatalf("destination connection error\n%v\n", err)
-	}
-
-	conn3, err := pgx.Connect(context.Background(), connStr)
-	if err != nil {
-		log.Fatalf("destination connection error\n%v\n", err)
-	}
-
-	DbDestDbq = conn1
-	DbDestInfo = conn2
-	DbDestService = conn3
+	return ls
 }
