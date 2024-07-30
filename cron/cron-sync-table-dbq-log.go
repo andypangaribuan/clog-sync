@@ -9,18 +9,39 @@
 
 package cron
 
-func SyncTableDbqLog(optAction string) {
-	mxSyncDbqLog.Lock()
-	defer mxSyncDbqLog.Unlock()
+import "strconv"
 
-	if isSyncDbqLogRunning {
+func SyncTableDbqLog(optAction string) {
+	if optAction == "" {
+		mxSyncDbqLog.Lock()
+		defer mxSyncDbqLog.Unlock()
+
+		if isSyncDbqLogRunning {
+			return
+		}
+
+		isSyncDbqLogRunning = true
+		go doSync("dbq_log", "", func() {
+			mxSyncDbqLog.Lock()
+			defer mxSyncDbqLog.Unlock()
+			isSyncDbqLogRunning = false
+		})
+
 		return
 	}
 
-	isSyncDbqLogRunning = true
+	opt, _ := strconv.Atoi(optAction)
+	lsMxSyncDbqLog[opt].Lock()
+	defer lsMxSyncDbqLog[opt].Unlock()
+
+	if lsIsSyncDbqLogRunning[opt] {
+		return
+	}
+
+	lsIsSyncDbqLogRunning[opt] = true
 	go doSync("dbq_log", optAction, func() {
-		mxSyncDbqLog.Lock()
-		defer mxSyncDbqLog.Unlock()
-		isSyncDbqLogRunning = false
+		lsMxSyncDbqLog[opt].Lock()
+		defer lsMxSyncDbqLog[opt].Unlock()
+		lsIsSyncDbqLogRunning[opt] = false
 	})
 }

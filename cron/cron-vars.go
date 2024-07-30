@@ -15,13 +15,15 @@ import (
 )
 
 var (
-	mxSyncDbqLog     sync.Mutex
 	mxSyncInfoLog    sync.Mutex
 	mxSyncServiceLog sync.Mutex
+	mxSyncDbqLog     sync.Mutex
+	lsMxSyncDbqLog   []sync.Mutex
 
-	isSyncDbqLogRunning     bool
 	isSyncInfoLogRunning    bool
 	isSyncServiceLogRunning bool
+	isSyncDbqLogRunning     bool
+	lsIsSyncDbqLogRunning   []bool
 
 	qInsertDbqLog = strings.TrimSpace(`
 INSERT INTO dbq_log (
