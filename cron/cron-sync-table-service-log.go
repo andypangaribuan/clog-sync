@@ -9,7 +9,7 @@
 
 package cron
 
-func SyncServiceLog() {
+func SyncTableServiceLog() {
 	mxSyncServiceLog.Lock()
 	defer mxSyncServiceLog.Unlock()
 
@@ -18,7 +18,7 @@ func SyncServiceLog() {
 	}
 
 	isSyncServiceLogRunning = true
-	go doSync("service_log", func() {
+	go doSync("service_log", "", func() {
 		mxSyncServiceLog.Lock()
 		defer mxSyncServiceLog.Unlock()
 		isSyncServiceLogRunning = false

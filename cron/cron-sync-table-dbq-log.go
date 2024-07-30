@@ -9,18 +9,18 @@
 
 package cron
 
-func SyncInfoLog() {
-	mxSyncInfoLog.Lock()
-	defer mxSyncInfoLog.Unlock()
+func SyncTableDbqLog() {
+	mxSyncDbqLog.Lock()
+	defer mxSyncDbqLog.Unlock()
 
-	if isSyncInfoLogRunning {
+	if isSyncDbqLogRunning {
 		return
 	}
 
-	isSyncInfoLogRunning = true
-	go doSync("info_log", func() {
-		mxSyncInfoLog.Lock()
-		defer mxSyncInfoLog.Unlock()
-		isSyncInfoLogRunning = false
+	isSyncDbqLogRunning = true
+	go doSync("dbq_log", "", func() {
+		mxSyncDbqLog.Lock()
+		defer mxSyncDbqLog.Unlock()
+		isSyncDbqLogRunning = false
 	})
 }
