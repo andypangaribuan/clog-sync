@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/andypangaribuan/gmod/core/db"
+	"github.com/andypangaribuan/gmod/fm"
 	"github.com/andypangaribuan/gmod/gm"
 	"github.com/jackc/pgx/v5"
 )
@@ -32,10 +33,10 @@ func doSync(tableName string, optAction string, callback func()) {
 		_lastSync, _ = gm.Conv.Time.ToTime("1990-01-01", "yyyy-MM-dd")
 		lastSync     = *_lastSync
 		endQuery     = db.FetchOpt().EndQuery(fmt.Sprintf("ORDER BY created_at LIMIT %v", app.Env.FetchLimit))
-		stm          = "stm:" + tableName
+		stm          = "stm:" + tableName + fm.Ternary(optAction == "", "", ":"+optAction)
 	)
 
-	internalSyncLog, err := repo.InternalSyncLog.Fetch("table_name=?", tableName)
+	internalSyncLog, err := repo.InternalSyncLog.Fetch("table_name=?", tableName+fm.Ternary(optAction == "", "", ":"+optAction))
 	if err != nil {
 		log.Printf("[internal_sync_log] error when fetch: %+v\n", err)
 		return
@@ -43,7 +44,7 @@ func doSync(tableName string, optAction string, callback func()) {
 
 	if internalSyncLog == nil {
 		internalSyncLog = &entity.InternalSyncLog{
-			TableName: tableName,
+			TableName: tableName + fm.Ternary(optAction == "", "", ":"+optAction),
 			LastSync:  lastSync,
 		}
 
@@ -58,19 +59,19 @@ func doSync(tableName string, optAction string, callback func()) {
 
 	switch {
 	case tableName == "info_log":
-		exec(app.DbDestInfo, ctx, tableName, stm, qInsertInfoLog, &lastSync, stmLoopInfoLog,
+		exec(optAction, app.DbDestInfo, ctx, tableName, stm, qInsertInfoLog, &lastSync, stmLoopInfoLog,
 			func(lastSync *time.Time) ([]*entity.InfoLog, error) {
 				return repo.SourceInfoLog.Fetches("created_at>?", lastSync, endQuery)
 			})
 
 	case tableName == "service_log":
-		exec(app.DbDestService, ctx, tableName, stm, qInsertServiceLog, &lastSync, stmLoopServiceLog,
+		exec(optAction, app.DbDestService, ctx, tableName, stm, qInsertServiceLog, &lastSync, stmLoopServiceLog,
 			func(lastSync *time.Time) ([]*entity.ServiceLog, error) {
 				return repo.SourceServiceLog.Fetches("created_at>?", lastSync, endQuery)
 			})
 
 	case tableName == "dbq_log" && optAction == "":
-		exec(app.DbDestDbq, ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
+		exec(optAction, app.DbDestDbq, ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
 			func(lastSync *time.Time) ([]*entity.DbqLog, error) {
 				return repo.SourceDbqLog.Fetches("created_at>?", lastSync, endQuery)
 			})
@@ -78,7 +79,7 @@ func doSync(tableName string, optAction string, callback func()) {
 	case tableName == "dbq_log":
 		var (
 			opt, _      = strconv.Atoi(optAction)
-			secondRange = 10
+			secondRange = 6 // 60 seconds / 6 secondRange = 10 concurrent connection
 			start       = opt * secondRange
 			seconds     = make([]int, 0)
 		)
@@ -87,15 +88,14 @@ func doSync(tableName string, optAction string, callback func()) {
 			seconds = append(seconds, start+i)
 		}
 
-		stm = fmt.Sprintf("%v-%v", stm, opt)
-		exec(app.DbDestDbq, ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
+		exec(optAction, app.LsDbDestDbq[opt], ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
 			func(lastSync *time.Time) ([]*entity.DbqLog, error) {
-				return repo.SourceDbqLog.Fetches("created_at>?", lastSync, endQuery)
+				return repo.SourceDbqLog.Fetches("created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
 			})
 	}
 }
 
-func exec[T any](dbConn *pgx.Conn, ctx context.Context, tableName string, stm string, qry string, lastSync *time.Time, loopExec func([]*T, *time.Time, *pgx.Conn, context.Context, string) error, fetches func(*time.Time) ([]*T, error)) {
+func exec[T any](optAction string, dbConn *pgx.Conn, ctx context.Context, tableName string, stm string, qry string, lastSync *time.Time, loopExec func([]*T, *time.Time, *pgx.Conn, context.Context, string) error, fetches func(*time.Time) ([]*T, error)) {
 	var (
 		isPrepared  = false
 		startedTime time.Time
@@ -147,7 +147,7 @@ func exec[T any](dbConn *pgx.Conn, ctx context.Context, tableName string, stm st
 			return
 		}
 
-		err = repo.InternalSyncLog.Update(db.Update().Set("last_sync=?", lastSync).Where("table_name=?", tableName).AutoUpdatedAt(false))
+		err = repo.InternalSyncLog.Update(db.Update().Set("last_sync=?", lastSync).Where("table_name=?", tableName+fm.Ternary(optAction == "", "", ":"+optAction)).AutoUpdatedAt(false))
 		if err != nil {
 			log.Printf("[internal_sync_log] error when update: %+v\n", err)
 			return

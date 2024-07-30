@@ -39,13 +39,23 @@ func runCron() {
 			time.Sleep(app.Env.FetchDelayStartUp)
 		}
 
-		// go cron.SyncTableInfoLog()
-		// go cron.SyncTableServiceLog()
-		// go cron.SyncTableDbqLog("") // normal mode
+		go cron.SyncTableInfoLog()
+		go cron.SyncTableServiceLog()
 
+		// normal mode
+		// go cron.SyncTableDbqLog("")
+
+		// parallel mode
 		go cron.SyncTableDbqLog("0")
-		// go cron.SyncTableDbqLog("1")
-		// go cron.SyncTableDbqLog("2")
+		go cron.SyncTableDbqLog("1")
+		go cron.SyncTableDbqLog("2")
+		go cron.SyncTableDbqLog("3")
+		go cron.SyncTableDbqLog("4")
+		go cron.SyncTableDbqLog("5")
+		go cron.SyncTableDbqLog("6")
+		go cron.SyncTableDbqLog("7")
+		go cron.SyncTableDbqLog("8")
+		go cron.SyncTableDbqLog("9")
 	})
 
 	scheduler.StartAsync()

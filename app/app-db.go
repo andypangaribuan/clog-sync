@@ -44,9 +44,9 @@ func initDb() {
 	connStr := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v", destination.Username, destination.Password, destination.Host, destination.Port, destination.Name)
 	ls := createMultiConnection(3, connStr)
 
-	DbDestDbq = ls[0]
-	DbDestInfo = ls[1]
-	DbDestService = ls[2]
+	DbDestInfo = ls[0]
+	DbDestService = ls[1]
+	DbDestDbq = ls[2]
 	LsDbDestDbq = createMultiConnection(10, connStr)
 }
 
