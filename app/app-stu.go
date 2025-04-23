@@ -37,4 +37,5 @@ type stuDb struct {
 	Name string
 	User string
 	Pass string
+	Type string
 }

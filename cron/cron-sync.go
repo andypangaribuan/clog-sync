@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"github.com/andypangaribuan/gmod/core/db"
 	"github.com/andypangaribuan/gmod/fm"
 	"github.com/andypangaribuan/gmod/gm"
@@ -59,19 +60,19 @@ func doSync(tableName string, optAction string, callback func()) {
 
 	switch {
 	case tableName == "info_log":
-		exec(optAction, app.DbDestInfo, ctx, tableName, stm, qInsertInfoLog, &lastSync, stmLoopInfoLog,
+		exec(optAction, app.DbDestInfo, app.ChDbDestInfo, ctx, tableName, stm, qInsertInfoLog, &lastSync, stmLoopInfoLog,
 			func(lastSync *time.Time) ([]*entity.InfoLog, error) {
 				return repo.SourceInfoLog.Fetches("created_at>?", lastSync, endQuery)
 			})
 
 	case tableName == "service_log":
-		exec(optAction, app.DbDestService, ctx, tableName, stm, qInsertServiceLog, &lastSync, stmLoopServiceLog,
+		exec(optAction, app.DbDestService, app.ChDbDestService, ctx, tableName, stm, qInsertServiceLog, &lastSync, stmLoopServiceLog,
 			func(lastSync *time.Time) ([]*entity.ServiceLog, error) {
 				return repo.SourceServiceLog.Fetches("created_at>?", lastSync, endQuery)
 			})
 
 	case tableName == "dbq_log" && optAction == "":
-		exec(optAction, app.DbDestDbq, ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
+		exec(optAction, app.DbDestDbq, app.ChDbDestDbq, ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
 			func(lastSync *time.Time) ([]*entity.DbqLog, error) {
 				return repo.SourceDbqLog.Fetches("created_at>?", lastSync, endQuery)
 			})
@@ -88,14 +89,14 @@ func doSync(tableName string, optAction string, callback func()) {
 			seconds = append(seconds, start+i)
 		}
 
-		exec(optAction, app.LsDbDestDbq[opt], ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
+		exec(optAction, app.LsDbDestDbq[opt], app.ChLsDbDestDbq[opt], ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
 			func(lastSync *time.Time) ([]*entity.DbqLog, error) {
 				return repo.SourceDbqLog.Fetches("created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
 			})
 	}
 }
 
-func exec[T any](optAction string, dbConn *pgx.Conn, ctx context.Context, tableName string, stm string, qry string, lastSync *time.Time, loopExec func([]*T, *time.Time, *pgx.Conn, context.Context, string) error, fetches func(*time.Time) ([]*T, error)) {
+func exec[T any](optAction string, dbConn *pgx.Conn, chDbConn driver.Conn, ctx context.Context, tableName string, stm string, qry string, lastSync *time.Time, loopExec func([]*T, *time.Time, *pgx.Conn, driver.Conn, context.Context, string) error, fetches func(*time.Time) ([]*T, error)) {
 	var (
 		isPrepared  = false
 		startedTime time.Time
@@ -121,30 +122,40 @@ func exec[T any](optAction string, dbConn *pgx.Conn, ctx context.Context, tableN
 
 		log.Printf("[%v] have %v new data\n", tableName, total)
 
-		if !isPrepared {
-			isPrepared = true
-			_, err = dbConn.Prepare(ctx, stm, qry)
+		if dbConn != nil {
+			if !isPrepared {
+				isPrepared = true
+				_, err = dbConn.Prepare(ctx, stm, qry)
+				if err != nil {
+					log.Printf("[db-destination] error when prepare: %+v\n", err)
+					return
+				}
+			}
+
+			tx, err := dbConn.Begin(ctx)
 			if err != nil {
-				log.Printf("[db-destination] error when prepare: %+v\n", err)
+				log.Printf("[db-destination] error when begin: %+v\n", err)
+				return
+			}
+
+			err = loopExec(ls, lastSync, dbConn, chDbConn, ctx, stm)
+			if err != nil {
+				return
+			}
+
+			err = tx.Commit(ctx)
+			if err != nil {
+				log.Printf("[%v] error when commit: %+v\n", tableName, err)
 				return
 			}
 		}
 
-		tx, err := dbConn.Begin(ctx)
-		if err != nil {
-			log.Printf("[db-destination] error when begin: %+v\n", err)
-			return
-		}
-
-		err = loopExec(ls, lastSync, dbConn, ctx, stm)
-		if err != nil {
-			return
-		}
-
-		err = tx.Commit(ctx)
-		if err != nil {
-			log.Printf("[%v] error when commit: %+v\n", tableName, err)
-			return
+		if chDbConn != nil {
+			err = loopExec(ls, lastSync, dbConn, chDbConn, ctx, "")
+			if err != nil {
+				log.Printf("[db-destination] error when insert: %+v\n", err)
+				return
+			}
 		}
 
 		err = repo.InternalSyncLog.Update(db.Update().Set("last_sync=?", lastSync).Where("table_name=?", tableName+fm.Ternary(optAction == "", "", ":"+optAction)).AutoUpdatedAt(false))

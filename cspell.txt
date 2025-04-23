@@ -3,3 +3,4 @@ xrepo
 gocron
 timenow
 jackc
+clickhouse

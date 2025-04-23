@@ -41,6 +41,7 @@ func initEnv() {
 			Name: gm.Util.Env.GetString("DESTINATION_DB_NAME"),
 			User: gm.Util.Env.GetString("DESTINATION_DB_USER"),
 			Pass: gm.Util.Env.GetString("DESTINATION_DB_PASS"),
+			Type: gm.Util.Env.GetString("DESTINATION_DB_TYPE"),
 		},
 	}
 }

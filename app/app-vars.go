@@ -10,15 +10,22 @@
 package app
 
 import (
+	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"github.com/andypangaribuan/gmod/ice"
 	"github.com/jackc/pgx/v5"
 )
 
 var (
-	DbSource      ice.DbInstance
-	Env           *stuEnv
+	Env      *stuEnv
+	DbSource ice.DbInstance
+
 	DbDestInfo    *pgx.Conn
 	DbDestService *pgx.Conn
 	DbDestDbq     *pgx.Conn
 	LsDbDestDbq   []*pgx.Conn
+
+	ChDbDestInfo    driver.Conn
+	ChDbDestService driver.Conn
+	ChDbDestDbq     driver.Conn
+	ChLsDbDestDbq   []driver.Conn
 )
