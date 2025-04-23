@@ -45,8 +45,9 @@ function build-image {
   image=ghcr.io/andypangaribuan/clog-sync
 
   docker build --no-cache \
-    -t $image:$version \
-    -f ./res/Dockerfile .
+    --build-arg APP_VERSION=$version \
+    -f ./res/Dockerfile \
+    -t $image:$version .
 }
 
 
