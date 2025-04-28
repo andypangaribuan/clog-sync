@@ -43,42 +43,60 @@ func initDb() {
 	}
 
 	DbSource = gm.Db.Postgres(source)
-	// DbDestination = gm.Db.Postgres(destination)
-	// DbDestination = gm.Db.Postgres(destination)
 
-	connStr := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v", destination.Username, destination.Password, destination.Host, destination.Port, destination.Name)
-	ls, chLs := createDestMultiConnection(3, connStr)
+	switch Env.InfoLogType {
+	case "P1":
+		LsDbDestInfo, ChLsDbDestInfo = createDestMultiConnection(1, destination, Env.DbDestination.Type)
 
-	DbDestInfo = ls[0]
-	DbDestService = ls[1]
-	DbDestDbq = ls[2]
+	case "P10":
+		LsDbDestInfo, ChLsDbDestInfo = createDestMultiConnection(10, destination, Env.DbDestination.Type)
 
-	ChDbDestInfo = chLs[0]
-	ChDbDestService = chLs[1]
-	ChDbDestDbq = chLs[2]
+	case "P60":
+		LsDbDestInfo, ChLsDbDestInfo = createDestMultiConnection(60, destination, Env.DbDestination.Type)
+	}
 
-	LsDbDestDbq, ChLsDbDestDbq = createDestMultiConnection(10, connStr)
+	switch Env.ServiceLogType {
+	case "P1":
+		LsDbDestService, ChLsDbDestService = createDestMultiConnection(1, destination, Env.DbDestination.Type)
+
+	case "P10":
+		LsDbDestService, ChLsDbDestService = createDestMultiConnection(10, destination, Env.DbDestination.Type)
+
+	case "P60":
+		LsDbDestService, ChLsDbDestService = createDestMultiConnection(60, destination, Env.DbDestination.Type)
+	}
+
+	switch Env.DbqLogType {
+	case "P1":
+		LsDbDestDbq, ChLsDbDestDbq = createDestMultiConnection(1, destination, Env.DbDestination.Type)
+
+	case "P10":
+		LsDbDestDbq, ChLsDbDestDbq = createDestMultiConnection(10, destination, Env.DbDestination.Type)
+
+	case "P60":
+		LsDbDestDbq, ChLsDbDestDbq = createDestMultiConnection(60, destination, Env.DbDestination.Type)
+	}
 }
 
-func createDestMultiConnection(total int, connStr string) ([]*pgx.Conn, []driver.Conn) {
+func createDestMultiConnection(total int, dbc mol.DbConnection, dbType string) ([]*pgx.Conn, []driver.Conn) {
 	ls := make([]*pgx.Conn, total)
 	chLs := make([]driver.Conn, total)
 
-	for i := 0; i < total; i++ {
-		if Env.DbDestination.Type == "clickhouse" {
+	for i := range total {
+		if dbType == "clickhouse" {
 			conn, err := clickhouse.Open(&clickhouse.Options{
-				Addr: []string{fmt.Sprintf("%v:%v", Env.DbDestination.Host, Env.DbDestination.Port)},
+				Addr: []string{fmt.Sprintf("%v:%v", dbc.Host, dbc.Port)},
 				Auth: clickhouse.Auth{
-					Database: Env.DbDestination.Name,
-					Username: Env.DbDestination.User,
-					Password: Env.DbDestination.Pass,
+					Database: dbc.Name,
+					Username: dbc.Username,
+					Password: dbc.Password,
 				},
 				ClientInfo: clickhouse.ClientInfo{
 					Products: []struct {
 						Name    string
 						Version string
 					}{
-						{Name: Env.AppName, Version: gm.Util.Env.GetString("APP_VERSION", "0.0.0")},
+						{Name: dbc.AppName, Version: gm.Util.Env.GetString("APP_VERSION", "0.0.0")},
 					},
 				},
 				DialContext: func(ctx context.Context, addr string) (net.Conn, error) {
@@ -92,8 +110,8 @@ func createDestMultiConnection(total int, connStr string) ([]*pgx.Conn, []driver
 					Method: clickhouse.CompressionLZ4,
 				},
 				DialTimeout:          time.Second * 30,
-				MaxOpenConns:         5,
-				MaxIdleConns:         5,
+				MaxOpenConns:         3,
+				MaxIdleConns:         3,
 				ConnMaxLifetime:      time.Duration(10) * time.Minute,
 				ConnOpenStrategy:     clickhouse.ConnOpenInOrder,
 				BlockBufferSize:      10,
@@ -116,6 +134,7 @@ func createDestMultiConnection(total int, connStr string) ([]*pgx.Conn, []driver
 			continue
 		}
 
+		connStr := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v", dbc.Username, dbc.Password, dbc.Host, dbc.Port, dbc.Name)
 		conn, err := pgx.Connect(context.Background(), connStr)
 		if err != nil {
 			log.Fatalf("destination connection error\n%v\n", err)

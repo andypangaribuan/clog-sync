@@ -4,3 +4,4 @@ gocron
 timenow
 jackc
 clickhouse
+dbname

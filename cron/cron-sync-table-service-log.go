@@ -9,18 +9,25 @@
 
 package cron
 
-func SyncTableServiceLog() {
-	mxSyncServiceLog.Lock()
-	defer mxSyncServiceLog.Unlock()
+import "strconv"
 
-	if isSyncServiceLogRunning {
+func SyncTableServiceLog(logType string, optAction string) {
+	opt := 0
+	if optAction != "" {
+		opt, _ = strconv.Atoi(optAction)
+	}
+
+	lsMxSyncServiceLog[opt].Lock()
+	defer lsMxSyncServiceLog[opt].Unlock()
+
+	if lsIsSyncServiceLogRunning[opt] {
 		return
 	}
 
-	isSyncServiceLogRunning = true
-	go doSync("service_log", "", func() {
-		mxSyncServiceLog.Lock()
-		defer mxSyncServiceLog.Unlock()
-		isSyncServiceLogRunning = false
+	lsIsSyncServiceLogRunning[opt] = true
+	go doSync("service_log", logType, optAction, func() {
+		lsMxSyncServiceLog[opt].Lock()
+		defer lsMxSyncServiceLog[opt].Unlock()
+		lsIsSyncServiceLogRunning[opt] = false
 	})
 }

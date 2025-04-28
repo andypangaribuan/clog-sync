@@ -29,6 +29,10 @@ type stuEnv struct {
 
 	DbSource      *stuDb
 	DbDestination *stuDb
+
+	InfoLogType    string
+	ServiceLogType string
+	DbqLogType     string
 }
 
 type stuDb struct {

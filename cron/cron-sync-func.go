@@ -96,7 +96,7 @@ func argsServiceLog(e *entity.ServiceLog) []any {
 }
 
 func stmLoopDbqLog(entities []*entity.DbqLog, lastSync *time.Time, dbConn *pgx.Conn, chDbConn driver.Conn, ctx context.Context, stm string) error {
-	for i := 0; i < len(entities); i++ {
+	for i := range len(entities) {
 		e := entities[i]
 		if lastSync.Before(e.CreatedAt) {
 			*lastSync = e.CreatedAt
@@ -123,7 +123,7 @@ func stmLoopDbqLog(entities []*entity.DbqLog, lastSync *time.Time, dbConn *pgx.C
 }
 
 func stmLoopInfoLog(entities []*entity.InfoLog, lastSync *time.Time, dbConn *pgx.Conn, chDbConn driver.Conn, ctx context.Context, stm string) error {
-	for i := 0; i < len(entities); i++ {
+	for i := range len(entities) {
 		e := entities[i]
 		if lastSync.Before(e.CreatedAt) {
 			*lastSync = e.CreatedAt
@@ -150,7 +150,7 @@ func stmLoopInfoLog(entities []*entity.InfoLog, lastSync *time.Time, dbConn *pgx
 }
 
 func stmLoopServiceLog(entities []*entity.ServiceLog, lastSync *time.Time, dbConn *pgx.Conn, chDbConn driver.Conn, ctx context.Context, stm string) error {
-	for i := 0; i < len(entities); i++ {
+	for i := range len(entities) {
 		e := entities[i]
 		if lastSync.Before(e.CreatedAt) {
 			*lastSync = e.CreatedAt

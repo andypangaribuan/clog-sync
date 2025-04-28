@@ -11,26 +11,12 @@ package cron
 
 import "strconv"
 
-func SyncTableDbqLog(optAction string) {
-	if optAction == "" {
-		mxSyncDbqLog.Lock()
-		defer mxSyncDbqLog.Unlock()
-
-		if isSyncDbqLogRunning {
-			return
-		}
-
-		isSyncDbqLogRunning = true
-		go doSync("dbq_log", "", func() {
-			mxSyncDbqLog.Lock()
-			defer mxSyncDbqLog.Unlock()
-			isSyncDbqLogRunning = false
-		})
-
-		return
+func SyncTableDbqLog(logType string, optAction string) {
+	opt := 0
+	if optAction != "" {
+		opt, _ = strconv.Atoi(optAction)
 	}
 
-	opt, _ := strconv.Atoi(optAction)
 	lsMxSyncDbqLog[opt].Lock()
 	defer lsMxSyncDbqLog[opt].Unlock()
 
@@ -39,7 +25,7 @@ func SyncTableDbqLog(optAction string) {
 	}
 
 	lsIsSyncDbqLogRunning[opt] = true
-	go doSync("dbq_log", optAction, func() {
+	go doSync("dbq_log", logType, optAction, func() {
 		lsMxSyncDbqLog[opt].Lock()
 		defer lsMxSyncDbqLog[opt].Unlock()
 		lsIsSyncDbqLogRunning[opt] = false

@@ -19,13 +19,19 @@ var (
 	Env      *stuEnv
 	DbSource ice.DbInstance
 
-	DbDestInfo    *pgx.Conn
-	DbDestService *pgx.Conn
-	DbDestDbq     *pgx.Conn
-	LsDbDestDbq   []*pgx.Conn
+	LsDbDestInfo    []*pgx.Conn
+	LsDbDestService []*pgx.Conn
+	LsDbDestDbq     []*pgx.Conn
 
-	ChDbDestInfo    driver.Conn
-	ChDbDestService driver.Conn
-	ChDbDestDbq     driver.Conn
-	ChLsDbDestDbq   []driver.Conn
+	ChLsDbDestInfo    []driver.Conn
+	ChLsDbDestService []driver.Conn
+	ChLsDbDestDbq     []driver.Conn
+
+	// DbDestInfo    *pgx.Conn
+	// DbDestService *pgx.Conn
+	// DbDestDbq     *pgx.Conn
+
+	// ChDbDestInfo    driver.Conn
+	// ChDbDestService driver.Conn
+	// ChDbDestDbq     driver.Conn
 )

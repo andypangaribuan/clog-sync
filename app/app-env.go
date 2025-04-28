@@ -43,5 +43,9 @@ func initEnv() {
 			Pass: gm.Util.Env.GetString("DESTINATION_DB_PASS"),
 			Type: gm.Util.Env.GetString("DESTINATION_DB_TYPE"),
 		},
+
+		InfoLogType:    gm.Util.Env.GetString("INFO_LOG_TYPE"),
+		ServiceLogType: gm.Util.Env.GetString("SERVICE_LOG_TYPE"),
+		DbqLogType:     gm.Util.Env.GetString("DBQ_LOG_TYPE"),
 	}
 }

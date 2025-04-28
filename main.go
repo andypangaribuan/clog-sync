@@ -13,6 +13,8 @@ import (
 	"clog-sync/app"
 	"clog-sync/cron"
 	"clog-sync/handler"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/andypangaribuan/gmod/fm"
@@ -39,23 +41,50 @@ func runCron() {
 			time.Sleep(app.Env.FetchDelayStartUp)
 		}
 
-		go cron.SyncTableInfoLog()
-		go cron.SyncTableServiceLog()
+		switch app.Env.InfoLogType {
+		case "P1":
+			go cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), "")
 
-		// normal mode
-		// go cron.SyncTableDbqLog("")
+		case "P10":
+			for i := range 10 {
+				go cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), strconv.Itoa(i))
+			}
 
-		// parallel mode
-		go cron.SyncTableDbqLog("0")
-		go cron.SyncTableDbqLog("1")
-		go cron.SyncTableDbqLog("2")
-		go cron.SyncTableDbqLog("3")
-		go cron.SyncTableDbqLog("4")
-		go cron.SyncTableDbqLog("5")
-		go cron.SyncTableDbqLog("6")
-		go cron.SyncTableDbqLog("7")
-		go cron.SyncTableDbqLog("8")
-		go cron.SyncTableDbqLog("9")
+		case "P60":
+			for i := range 60 {
+				go cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), strconv.Itoa(i))
+			}
+		}
+
+		switch app.Env.ServiceLogType {
+		case "P1":
+			go cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), "")
+
+		case "P10":
+			for i := range 10 {
+				go cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i))
+			}
+
+		case "P60":
+			for i := range 60 {
+				go cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i))
+			}
+		}
+
+		switch app.Env.DbqLogType {
+		case "P1":
+			go cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), "")
+
+		case "P10":
+			for i := range 10 {
+				go cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), strconv.Itoa(i))
+			}
+
+		case "P60":
+			for i := range 60 {
+				go cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), strconv.Itoa(i))
+			}
+		}
 	})
 
 	scheduler.StartAsync()
