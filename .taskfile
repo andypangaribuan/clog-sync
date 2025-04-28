@@ -41,7 +41,7 @@ function run {
 
 #: build clog-sync image
 function build-image {
-  version=1.0.3
+  version=1.0.4
   image=ghcr.io/andypangaribuan/clog-sync
 
   docker build --no-cache \
