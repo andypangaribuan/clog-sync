@@ -9,9 +9,30 @@
 
 package cron
 
-import "strconv"
+import (
+	"clog-sync/app"
+	"strconv"
+	"strings"
+)
 
-func SyncTableInfoLog(logType string, optAction string) {
+func SyncTableInfoLog() {
+	switch app.Env.InfoLogType {
+	case "P1":
+		go syncTableInfoLog(strings.ToLower(app.Env.ServiceLogType), "")
+
+	case "P10":
+		for i := range 10 {
+			go syncTableInfoLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i))
+		}
+
+	case "P60":
+		for i := range 60 {
+			go syncTableInfoLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i))
+		}
+	}
+}
+
+func syncTableInfoLog(logType string, optAction string) {
 	opt := 0
 	if optAction != "" {
 		opt, _ = strconv.Atoi(optAction)

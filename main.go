@@ -13,8 +13,6 @@ import (
 	"clog-sync/app"
 	"clog-sync/cron"
 	"clog-sync/handler"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/andypangaribuan/gmod/fm"
@@ -30,59 +28,9 @@ func main() {
 func cr(router server.RouterC) {
 	startUpDelayed := fm.Ptr(time.Second * 3)
 
-	switch app.Env.InfoLogType {
-	case "P1":
-		fn := func() { cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), "") }
-		router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-
-	case "P10":
-		for i := range 10 {
-			fn := func() { cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), strconv.Itoa(i)) }
-			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-		}
-
-	case "P60":
-		for i := range 60 {
-			fn := func() { cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), strconv.Itoa(i)) }
-			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-		}
-	}
-
-	switch app.Env.ServiceLogType {
-	case "P1":
-		fn := func() { cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), "") }
-		router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-
-	case "P10":
-		for i := range 10 {
-			fn := func() { cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i)) }
-			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-		}
-
-	case "P60":
-		for i := range 60 {
-			fn := func() { cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i)) }
-			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-		}
-	}
-
-	switch app.Env.DbqLogType {
-	case "P1":
-		fn := func() { cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), "") }
-		router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-
-	case "P10":
-		for i := range 10 {
-			fn := func() { cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), strconv.Itoa(i)) }
-			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-		}
-
-	case "P60":
-		for i := range 60 {
-			fn := func() { cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), strconv.Itoa(i)) }
-			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
-		}
-	}
+	router.Every(app.Env.CronRunEvery, cron.SyncTableInfoLog, startUpDelayed)
+	router.Every(app.Env.CronRunEvery, cron.SyncTableServiceLog, startUpDelayed)
+	router.Every(app.Env.CronRunEvery, cron.SyncTableDbqLog, startUpDelayed)
 }
 
 func rest(router server.RouterR) {
