@@ -71,12 +71,12 @@ func doSync(tableName string, logType string, optAction string, callback func())
 		secondRange = 1
 	}
 
-	switch {
-	case tableName == "info_log":
+	switch tableName {
+	case "info_log":
 		if logType == "p1" {
 			exec(logType, optAction, app.LsDbDestInfo[0], app.ChLsDbDestInfo[0], ctx, tableName, stm, qInsertInfoLog, &lastSync, stmLoopInfoLog,
-				func(lastSync *time.Time) ([]*entity.InfoLog, error) {
-					return repo.SourceInfoLog.Fetches("created_at>?", lastSync, endQuery)
+				func(safe string, lastSync *time.Time) ([]*entity.InfoLog, error) {
+					return repo.SourceInfoLog.Fetches(safe+"created_at>?", lastSync, endQuery)
 				})
 		}
 
@@ -91,19 +91,19 @@ func doSync(tableName string, logType string, optAction string, callback func())
 		}
 
 		exec(logType, optAction, app.LsDbDestInfo[opt], app.ChLsDbDestInfo[opt], ctx, tableName, stm, qInsertInfoLog, &lastSync, stmLoopInfoLog,
-			func(lastSync *time.Time) ([]*entity.InfoLog, error) {
+			func(safe string, lastSync *time.Time) ([]*entity.InfoLog, error) {
 				if len(seconds) == 1 {
-					return repo.SourceInfoLog.Fetches("created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
+					return repo.SourceInfoLog.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
 				}
 
-				return repo.SourceInfoLog.Fetches("created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
+				return repo.SourceInfoLog.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
 			})
 
-	case tableName == "service_log":
+	case "service_log":
 		if logType == "p1" {
 			exec(logType, optAction, app.LsDbDestService[0], app.ChLsDbDestService[0], ctx, tableName, stm, qInsertServiceLog, &lastSync, stmLoopServiceLog,
-				func(lastSync *time.Time) ([]*entity.ServiceLog, error) {
-					return repo.SourceServiceLog.Fetches("created_at>?", lastSync, endQuery)
+				func(safe string, lastSync *time.Time) ([]*entity.ServiceLog, error) {
+					return repo.SourceServiceLog.Fetches(safe+"created_at>? AND created_at < NOW() - INTERVAL '?'", lastSync, app.Env.SafeFetch, endQuery)
 				})
 		}
 
@@ -118,19 +118,19 @@ func doSync(tableName string, logType string, optAction string, callback func())
 		}
 
 		exec(logType, optAction, app.LsDbDestService[opt], app.ChLsDbDestService[opt], ctx, tableName, stm, qInsertServiceLog, &lastSync, stmLoopServiceLog,
-			func(lastSync *time.Time) ([]*entity.ServiceLog, error) {
+			func(safe string, lastSync *time.Time) ([]*entity.ServiceLog, error) {
 				if len(seconds) == 1 {
-					return repo.SourceServiceLog.Fetches("created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
+					return repo.SourceServiceLog.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
 				}
 
-				return repo.SourceServiceLog.Fetches("created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
+				return repo.SourceServiceLog.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
 			})
 
-	case tableName == "dbq_log":
+	case "dbq_log":
 		if logType == "p1" {
 			exec(logType, optAction, app.LsDbDestDbq[0], app.ChLsDbDestDbq[0], ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
-				func(lastSync *time.Time) ([]*entity.DbqLog, error) {
-					return repo.SourceDbqLog.Fetches("created_at>?", lastSync, endQuery)
+				func(safe string, lastSync *time.Time) ([]*entity.DbqLog, error) {
+					return repo.SourceDbqLog.Fetches(safe+"created_at>?", lastSync, endQuery)
 				})
 		}
 
@@ -145,18 +145,19 @@ func doSync(tableName string, logType string, optAction string, callback func())
 		}
 
 		exec(logType, optAction, app.LsDbDestDbq[opt], app.ChLsDbDestDbq[opt], ctx, tableName, stm, qInsertDbqLog, &lastSync, stmLoopDbqLog,
-			func(lastSync *time.Time) ([]*entity.DbqLog, error) {
+			func(safe string, lastSync *time.Time) ([]*entity.DbqLog, error) {
 				if len(seconds) == 1 {
-					return repo.SourceDbqLog.Fetches("created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
+					return repo.SourceDbqLog.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
 				}
 
-				return repo.SourceDbqLog.Fetches("created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
+				return repo.SourceDbqLog.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
 			})
 	}
 }
 
-func exec[T any](logType string, optAction string, dbConn *pgx.Conn, chDbConn driver.Conn, ctx context.Context, tableName string, stm string, qry string, lastSync *time.Time, loopExec func([]*T, *time.Time, *pgx.Conn, driver.Conn, context.Context, string) error, fetches func(*time.Time) ([]*T, error)) {
+func exec[T any](logType string, optAction string, dbConn *pgx.Conn, chDbConn driver.Conn, ctx context.Context, tableName string, stm string, qry string, lastSync *time.Time, loopExec func([]*T, *time.Time, *pgx.Conn, driver.Conn, context.Context, string) error, fetches func(string, *time.Time) ([]*T, error)) {
 	var (
+		safe        = fmt.Sprintf("created_at < NOW() - INTERVAL '%v' AND ", app.Env.SafeFetch)
 		isPrepared  = false
 		startedTime time.Time
 		oneSecond   = float64(1000)
@@ -167,7 +168,7 @@ func exec[T any](logType string, optAction string, dbConn *pgx.Conn, chDbConn dr
 	for {
 		startedTime = gm.Util.Timenow()
 
-		ls, err := fetches(lastSync)
+		ls, err := fetches(safe, lastSync)
 		if err != nil {
 			log.Printf("[%v] error when fetches: %+v\n", tableName, err)
 			return

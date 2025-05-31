@@ -7,7 +7,6 @@ toolchain go1.24.0
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.34.0
 	github.com/andypangaribuan/gmod v1.0.55
-	github.com/go-co-op/gocron v1.37.0
 	github.com/jackc/pgx/v5 v5.6.0
 )
 
@@ -30,6 +29,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fasthttp/websocket v1.5.8 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/go-co-op/gocron v1.37.0 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect

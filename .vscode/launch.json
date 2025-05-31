@@ -7,7 +7,7 @@
       "request": "launch",
       "mode": "debug",
       "program": "main.go",
-      "envFile": "${workspaceFolder}/res/envs/local.env"
+      "envFile": "${workspaceFolder}/res/envs/prod-local.env"
     }
   ]
 }

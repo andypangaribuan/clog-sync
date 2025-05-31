@@ -9,11 +9,7 @@
 
 package app
 
-import (
-	"time"
-
-	"github.com/andypangaribuan/gmod/gm"
-)
+import "github.com/andypangaribuan/gmod/gm"
 
 func initEnv() {
 	Env = &stuEnv{
@@ -24,9 +20,9 @@ func initEnv() {
 		AppServerPrintOnError: gm.Util.Env.GetBool("APP_SERVER_PRINT_ON_ERROR"),
 		RestPort:              gm.Util.Env.GetInt("REST_PORT"),
 
-		FetchInterval:     gm.Util.Env.GetString("FETCH_INTERVAL", "10s"),
-		FetchDelayStartUp: gm.Util.Env.GetDurationMs("FETCH_DELAY_STARTUP_MS", time.Second*5),
-		FetchLimit:        gm.Util.Env.GetInt("FETCH_LIMIT"),
+		FetchLimit:   gm.Util.Env.GetInt("FETCH_LIMIT"),
+		CronRunEvery: gm.Util.Env.GetString("CRON_RUN_EVERY", "10s"),
+		SafeFetch:    gm.Util.Env.GetString("SAFE_FETCH", "10m"),
 
 		DbSource: &stuDb{
 			Host: gm.Util.Env.GetString("SOURCE_DB_HOST"),

@@ -19,82 +19,78 @@ import (
 
 	"github.com/andypangaribuan/gmod/fm"
 	"github.com/andypangaribuan/gmod/server"
-	"github.com/go-co-op/gocron"
 )
 
 func main() {
 	fm.CallOrderedInit()
-	runCron()
+	server.Cron(cr)
 	server.FuseR(app.Env.RestPort, rest)
 }
 
-func runCron() {
-	var (
-		isStartUp = true
-		loc, _    = time.LoadLocation(app.Env.AppTimezone)
-		scheduler = gocron.NewScheduler(loc)
-	)
+func cr(router server.RouterC) {
+	startUpDelayed := fm.Ptr(time.Second * 3)
 
-	_, _ = scheduler.Every(app.Env.FetchInterval).Do(func() {
-		if isStartUp {
-			isStartUp = false
-			time.Sleep(app.Env.FetchDelayStartUp)
+	switch app.Env.InfoLogType {
+	case "P1":
+		fn := func() { cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), "") }
+		router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
+
+	case "P10":
+		for i := range 10 {
+			fn := func() { cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), strconv.Itoa(i)) }
+			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
 		}
 
-		switch app.Env.InfoLogType {
-		case "P1":
-			go cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), "")
+	case "P60":
+		for i := range 60 {
+			fn := func() { cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), strconv.Itoa(i)) }
+			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
+		}
+	}
 
-		case "P10":
-			for i := range 10 {
-				go cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), strconv.Itoa(i))
-			}
+	switch app.Env.ServiceLogType {
+	case "P1":
+		fn := func() { cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), "") }
+		router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
 
-		case "P60":
-			for i := range 60 {
-				go cron.SyncTableInfoLog(strings.ToLower(app.Env.InfoLogType), strconv.Itoa(i))
-			}
+	case "P10":
+		for i := range 10 {
+			fn := func() { cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i)) }
+			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
 		}
 
-		switch app.Env.ServiceLogType {
-		case "P1":
-			go cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), "")
+	case "P60":
+		for i := range 60 {
+			fn := func() { cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i)) }
+			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
+		}
+	}
 
-		case "P10":
-			for i := range 10 {
-				go cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i))
-			}
+	switch app.Env.DbqLogType {
+	case "P1":
+		fn := func() { cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), "") }
+		router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
 
-		case "P60":
-			for i := range 60 {
-				go cron.SyncTableServiceLog(strings.ToLower(app.Env.ServiceLogType), strconv.Itoa(i))
-			}
+	case "P10":
+		for i := range 10 {
+			fn := func() { cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), strconv.Itoa(i)) }
+			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
 		}
 
-		switch app.Env.DbqLogType {
-		case "P1":
-			go cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), "")
-
-		case "P10":
-			for i := range 10 {
-				go cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), strconv.Itoa(i))
-			}
-
-		case "P60":
-			for i := range 60 {
-				go cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), strconv.Itoa(i))
-			}
+	case "P60":
+		for i := range 60 {
+			fn := func() { cron.SyncTableDbqLog(strings.ToLower(app.Env.DbqLogType), strconv.Itoa(i)) }
+			router.Every(app.Env.CronRunEvery, fn, startUpDelayed)
 		}
-	})
-
-	scheduler.StartAsync()
+	}
 }
 
 func rest(router server.RouterR) {
 	router.AutoRecover(app.Env.AppAutoRecover)
 	router.PrintOnError(app.Env.AppServerPrintOnError)
+	router.NoLog([]string{"GET: /healthz"})
 
 	router.Endpoints(nil, nil, map[string][]func(server.FuseRContext) any{
-		"GET: /private/status": {handler.Private.Status},
+		"GET: /healthz": {handler.Private.Status},
 	})
 }

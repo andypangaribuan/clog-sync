@@ -13,5 +13,5 @@ package getstatus
 import "github.com/andypangaribuan/gmod/server"
 
 func Exec(ctx server.FuseRContext) any {
-	return ctx.R200OK("ok")
+	return ctx.R200OK("healthy")
 }
