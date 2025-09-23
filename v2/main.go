@@ -29,6 +29,7 @@ func cr(router server.RouterC) {
 	startUpDelayed := fm.Ptr(time.Second * 3)
 
 	router.Every(app.Env.CronRunEvery, cron.SyncTableInternal, startUpDelayed)
+	router.Every(app.Env.CronRunEvery, cron.SyncTableNoteV1, startUpDelayed)
 	router.Every(app.Env.CronRunEvery, cron.SyncTableServicePieceV1, startUpDelayed)
 	router.Every(app.Env.CronRunEvery, cron.SyncTableServiceV1, startUpDelayed)
 	router.Every(app.Env.CronRunEvery, cron.SyncTableDbqV1, startUpDelayed)
