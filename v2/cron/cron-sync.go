@@ -72,6 +72,62 @@ func doSync(tableName string, logType string, optAction string, callback func())
 	}
 
 	switch tableName {
+	case "internal":
+		if logType == "p1" {
+			exec(logType, optAction, app.LsDbDestInternal[0], app.ChLsDbDestInternal[0], ctx, tableName, stm, qInsertInternal, &lastSync, stmLoopInternal,
+				func(safe string, lastSync *time.Time) ([]*entity.Internal, error) {
+					return repo.SourceInternal.Fetches(safe+"created_at>?", lastSync, endQuery)
+				})
+			return
+		}
+
+		var (
+			opt, _  = strconv.Atoi(optAction)
+			start   = opt * secondRange
+			seconds = make([]int, 0)
+		)
+
+		for i := range secondRange {
+			seconds = append(seconds, start+i)
+		}
+
+		exec(logType, optAction, app.LsDbDestInternal[opt], app.ChLsDbDestInternal[opt], ctx, tableName, stm, qInsertInternal, &lastSync, stmLoopInternal,
+			func(safe string, lastSync *time.Time) ([]*entity.Internal, error) {
+				if len(seconds) == 1 {
+					return repo.SourceInternal.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
+				}
+
+				return repo.SourceInternal.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
+			})
+
+	case "note_v1":
+		if logType == "p1" {
+			exec(logType, optAction, app.LsDbDestNoteV1[0], app.ChLsDbDestNoteV1[0], ctx, tableName, stm, qInsertNoteV1, &lastSync, stmLoopNoteV1,
+				func(safe string, lastSync *time.Time) ([]*entity.NoteV1, error) {
+					return repo.SourceNoteV1.Fetches(safe+"created_at>?", lastSync, endQuery)
+				})
+			return
+		}
+
+		var (
+			opt, _  = strconv.Atoi(optAction)
+			start   = opt * secondRange
+			seconds = make([]int, 0)
+		)
+
+		for i := range secondRange {
+			seconds = append(seconds, start+i)
+		}
+
+		exec(logType, optAction, app.LsDbDestNoteV1[opt], app.ChLsDbDestNoteV1[opt], ctx, tableName, stm, qInsertNoteV1, &lastSync, stmLoopNoteV1,
+			func(safe string, lastSync *time.Time) ([]*entity.NoteV1, error) {
+				if len(seconds) == 1 {
+					return repo.SourceNoteV1.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
+				}
+
+				return repo.SourceNoteV1.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
+			})
+
 	case "service_piece_v1":
 		if logType == "p1" {
 			exec(logType, optAction, app.LsDbDestServicePieceV1[0], app.ChLsDbDestServicePieceV1[0], ctx, tableName, stm, qInsertServicePieceV1, &lastSync, stmLoopServicePieceV1,
@@ -154,6 +210,62 @@ func doSync(tableName string, logType string, optAction string, callback func())
 				}
 
 				return repo.SourceDbqV1.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
+			})
+
+	case "grpc_v1":
+		if logType == "p1" {
+			exec(logType, optAction, app.LsDbDestGrpcV1[0], app.ChLsDbDestGrpcV1[0], ctx, tableName, stm, qInsertGrpcV1, &lastSync, stmLoopGrpcV1,
+				func(safe string, lastSync *time.Time) ([]*entity.GrpcV1, error) {
+					return repo.SourceGrpcV1.Fetches(safe+"created_at>?", lastSync, endQuery)
+				})
+			return
+		}
+
+		var (
+			opt, _  = strconv.Atoi(optAction)
+			start   = opt * secondRange
+			seconds = make([]int, 0)
+		)
+
+		for i := range secondRange {
+			seconds = append(seconds, start+i)
+		}
+
+		exec(logType, optAction, app.LsDbDestGrpcV1[opt], app.ChLsDbDestGrpcV1[opt], ctx, tableName, stm, qInsertGrpcV1, &lastSync, stmLoopGrpcV1,
+			func(safe string, lastSync *time.Time) ([]*entity.GrpcV1, error) {
+				if len(seconds) == 1 {
+					return repo.SourceGrpcV1.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
+				}
+
+				return repo.SourceGrpcV1.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
+			})
+
+	case "http_call_v1":
+		if logType == "p1" {
+			exec(logType, optAction, app.LsDbDestHttpCallV1[0], app.ChLsDbDestHttpCallV1[0], ctx, tableName, stm, qInsertHttpCallV1, &lastSync, stmLoopHttpCallV1,
+				func(safe string, lastSync *time.Time) ([]*entity.HttpCallV1, error) {
+					return repo.SourceHttpCallV1.Fetches(safe+"created_at>?", lastSync, endQuery)
+				})
+			return
+		}
+
+		var (
+			opt, _  = strconv.Atoi(optAction)
+			start   = opt * secondRange
+			seconds = make([]int, 0)
+		)
+
+		for i := range secondRange {
+			seconds = append(seconds, start+i)
+		}
+
+		exec(logType, optAction, app.LsDbDestHttpCallV1[opt], app.ChLsDbDestHttpCallV1[opt], ctx, tableName, stm, qInsertHttpCallV1, &lastSync, stmLoopHttpCallV1,
+			func(safe string, lastSync *time.Time) ([]*entity.HttpCallV1, error) {
+				if len(seconds) == 1 {
+					return repo.SourceHttpCallV1.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER=?", lastSync, seconds[0], endQuery)
+				}
+
+				return repo.SourceHttpCallV1.Fetches(safe+"created_at>? AND FLOOR(EXTRACT(SECOND FROM created_at))::INTEGER IN (?)", lastSync, seconds, endQuery)
 			})
 	}
 }

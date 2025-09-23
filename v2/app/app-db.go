@@ -46,6 +46,28 @@ func initDb() {
 		DbSource = gm.Db.Postgres(source)
 	}
 
+	switch Env.InternalType {
+	case "P1":
+		LsDbDestInternal, ChLsDbDestInternal = createDestMultiConnection(1, destination, Env.DbDestination.Type)
+
+	case "P10":
+		LsDbDestInternal, ChLsDbDestInternal = createDestMultiConnection(10, destination, Env.DbDestination.Type)
+
+	case "P60":
+		LsDbDestInternal, ChLsDbDestInternal = createDestMultiConnection(60, destination, Env.DbDestination.Type)
+	}
+
+	switch Env.NoteV1Type {
+	case "P1":
+		LsDbDestNoteV1, ChLsDbDestNoteV1 = createDestMultiConnection(1, destination, Env.DbDestination.Type)
+
+	case "P10":
+		LsDbDestNoteV1, ChLsDbDestNoteV1 = createDestMultiConnection(10, destination, Env.DbDestination.Type)
+
+	case "P60":
+		LsDbDestNoteV1, ChLsDbDestNoteV1 = createDestMultiConnection(60, destination, Env.DbDestination.Type)
+	}
+
 	switch Env.ServicePieceV1Type {
 	case "P1":
 		LsDbDestServicePieceV1, ChLsDbDestServicePieceV1 = createDestMultiConnection(1, destination, Env.DbDestination.Type)
@@ -77,6 +99,28 @@ func initDb() {
 
 	case "P60":
 		LsDbDestDbqV1, ChLsDbDestDbqV1 = createDestMultiConnection(60, destination, Env.DbDestination.Type)
+	}
+
+	switch Env.GrpcV1Type {
+	case "P1":
+		LsDbDestGrpcV1, ChLsDbDestGrpcV1 = createDestMultiConnection(1, destination, Env.DbDestination.Type)
+
+	case "P10":
+		LsDbDestGrpcV1, ChLsDbDestGrpcV1 = createDestMultiConnection(10, destination, Env.DbDestination.Type)
+
+	case "P60":
+		LsDbDestGrpcV1, ChLsDbDestGrpcV1 = createDestMultiConnection(60, destination, Env.DbDestination.Type)
+	}
+
+	switch Env.HttpCallV1Type {
+	case "P1":
+		LsDbDestHttpCallV1, ChLsDbDestHttpCallV1 = createDestMultiConnection(1, destination, Env.DbDestination.Type)
+
+	case "P10":
+		LsDbDestHttpCallV1, ChLsDbDestHttpCallV1 = createDestMultiConnection(10, destination, Env.DbDestination.Type)
+
+	case "P60":
+		LsDbDestHttpCallV1, ChLsDbDestHttpCallV1 = createDestMultiConnection(60, destination, Env.DbDestination.Type)
 	}
 }
 

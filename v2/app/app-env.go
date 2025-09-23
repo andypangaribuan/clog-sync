@@ -41,8 +41,12 @@ func initEnv() {
 			Type: gm.Util.Env.GetString("DESTINATION_DB_TYPE"),
 		},
 
+		InternalType:       gm.Util.Env.GetString("INTERNAL_TYPE"),
+		NoteV1Type:         gm.Util.Env.GetString("NOTE_V1_TYPE"),
 		ServicePieceV1Type: gm.Util.Env.GetString("SERVICE_PIECE_V1_TYPE"),
 		ServiceV1Type:      gm.Util.Env.GetString("SERVICE_V1_TYPE"),
 		DbqV1Type:          gm.Util.Env.GetString("DBQ_V1_TYPE"),
+		GrpcV1Type:         gm.Util.Env.GetString("GRPC_V1_TYPE"),
+		HttpCallV1Type:     gm.Util.Env.GetString("HTTP_CALL_V1_TYPE"),
 	}
 }

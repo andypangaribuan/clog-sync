@@ -26,9 +26,13 @@ type stuEnv struct {
 	DbSource      *stuDb
 	DbDestination *stuDb
 
+	InternalType       string
+	NoteV1Type         string
 	ServicePieceV1Type string
 	ServiceV1Type      string
 	DbqV1Type          string
+	GrpcV1Type         string
+	HttpCallV1Type     string
 }
 
 type stuDb struct {

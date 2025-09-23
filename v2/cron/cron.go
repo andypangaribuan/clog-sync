@@ -15,14 +15,39 @@ import (
 )
 
 func init() {
+	initInternal()
 	initServicePiece()
 	initServiceV1()
 	initDbqV1()
+	initGrpcV1()
+	initHttpCallV1()
+}
+
+func initInternal() {
+	lsMxSyncInternal = make([]sync.Mutex, 0)
+	lsIsSyncInternalRunning = make([]bool, 0)
+	size := 60
+
+	switch app.Env.InternalType {
+	case "P1":
+		size = 1
+
+	case "P10":
+		size = 10
+
+	case "P60":
+		size = 60
+	}
+
+	for range size {
+		lsMxSyncInternal = append(lsMxSyncInternal, sync.Mutex{})
+		lsIsSyncInternalRunning = append(lsIsSyncInternalRunning, false)
+	}
 }
 
 func initServicePiece() {
 	lsMxSyncServicePieceV1 = make([]sync.Mutex, 0)
-	lsIsSyncServicePieceRunning = make([]bool, 0)
+	lsIsSyncServicePieceV1Running = make([]bool, 0)
 	size := 60
 
 	switch app.Env.ServicePieceV1Type {
@@ -38,7 +63,7 @@ func initServicePiece() {
 
 	for range size {
 		lsMxSyncServicePieceV1 = append(lsMxSyncServicePieceV1, sync.Mutex{})
-		lsIsSyncServicePieceRunning = append(lsIsSyncServicePieceRunning, false)
+		lsIsSyncServicePieceV1Running = append(lsIsSyncServicePieceV1Running, false)
 	}
 }
 
@@ -83,5 +108,49 @@ func initDbqV1() {
 	for range size {
 		lsMxSyncDbqV1 = append(lsMxSyncDbqV1, sync.Mutex{})
 		lsIsSyncDbqV1Running = append(lsIsSyncDbqV1Running, false)
+	}
+}
+
+func initGrpcV1() {
+	lsMxSyncGrpcV1 = make([]sync.Mutex, 0)
+	lsIsSyncGrpcV1Running = make([]bool, 0)
+	size := 60
+
+	switch app.Env.GrpcV1Type {
+	case "P1":
+		size = 1
+
+	case "P10":
+		size = 10
+
+	case "P60":
+		size = 60
+	}
+
+	for range size {
+		lsMxSyncGrpcV1 = append(lsMxSyncGrpcV1, sync.Mutex{})
+		lsIsSyncGrpcV1Running = append(lsIsSyncGrpcV1Running, false)
+	}
+}
+
+func initHttpCallV1() {
+	lsMxSyncHttpCallV1 = make([]sync.Mutex, 0)
+	lsIsSyncHttpCallV1Running = make([]bool, 0)
+	size := 60
+
+	switch app.Env.HttpCallV1Type {
+	case "P1":
+		size = 1
+
+	case "P10":
+		size = 10
+
+	case "P60":
+		size = 60
+	}
+
+	for range size {
+		lsMxSyncHttpCallV1 = append(lsMxSyncHttpCallV1, sync.Mutex{})
+		lsIsSyncHttpCallV1Running = append(lsIsSyncHttpCallV1Running, false)
 	}
 }

@@ -41,14 +41,14 @@ func syncTableServicePieceV1(logType string, optAction string) {
 	lsMxSyncServicePieceV1[opt].Lock()
 	defer lsMxSyncServicePieceV1[opt].Unlock()
 
-	if lsIsSyncServicePieceRunning[opt] {
+	if lsIsSyncServicePieceV1Running[opt] {
 		return
 	}
 
-	lsIsSyncServicePieceRunning[opt] = true
+	lsIsSyncServicePieceV1Running[opt] = true
 	go doSync("service_piece_v1", logType, optAction, func() {
 		lsMxSyncServicePieceV1[opt].Lock()
 		defer lsMxSyncServicePieceV1[opt].Unlock()
-		lsIsSyncServicePieceRunning[opt] = false
+		lsIsSyncServicePieceV1Running[opt] = false
 	})
 }
