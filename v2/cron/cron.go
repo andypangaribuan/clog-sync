@@ -16,6 +16,7 @@ import (
 
 func init() {
 	initInternal()
+	initNoteV1()
 	initServicePiece()
 	initServiceV1()
 	initDbqV1()
@@ -42,6 +43,28 @@ func initInternal() {
 	for range size {
 		lsMxSyncInternal = append(lsMxSyncInternal, sync.Mutex{})
 		lsIsSyncInternalRunning = append(lsIsSyncInternalRunning, false)
+	}
+}
+
+func initNoteV1() {
+	lsMxSyncNoteV1 = make([]sync.Mutex, 0)
+	lsIsSyncNoteV1Running = make([]bool, 0)
+	size := 60
+
+	switch app.Env.NoteV1Type {
+	case "P1":
+		size = 1
+
+	case "P10":
+		size = 10
+
+	case "P60":
+		size = 60
+	}
+
+	for range size {
+		lsMxSyncNoteV1 = append(lsMxSyncNoteV1, sync.Mutex{})
+		lsIsSyncNoteV1Running = append(lsIsSyncNoteV1Running, false)
 	}
 }
 
